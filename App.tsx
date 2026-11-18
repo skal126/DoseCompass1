@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Bluetooth, BluetoothOff } from 'lucide-react';
 import { DeviceManager } from './components/DeviceManager';
 import { TodayAtAGlance } from './components/TodayAtAGlance';
@@ -37,8 +37,6 @@ const STORAGE_KEYS = {
   use24Hour: 'dosecompass_24h_v2',
   customBleUuid: 'dosecompass_custom_ble_uuid_v2',
 };
-
-
 
 const ALL_DAYS = [true, true, true, true, true, true, true];
 
@@ -91,7 +89,6 @@ const DEFAULT_SLOTS: CompartmentSlot[] = [
     lastDispensedAt: null,
     lastStatus: 'idle',
   },
-
 ];
 
 function dateKeyToEpochDay(dateKey: string): number {
@@ -136,7 +133,6 @@ export function App() {
     loadSavedJson<string>(STORAGE_KEYS.customBleUuid, ''),
   );
 
-
   const [timezone, setTimezone] = useState<string>(() =>
     loadSavedJson<string>(STORAGE_KEYS.timezone, getBrowserTimezone()),
   );
@@ -158,13 +154,14 @@ export function App() {
     const legacyV2 = loadSavedJson<CompartmentSlot[] | null>(LEGACY_SLOTS_KEY_V2, null);
     // Preserve the user's first four compartment definitions when migrating
     // the old 13-compartment app to this four-servo ESP32.
-    const source = savedFour?.length >= 4
-      ? savedFour
-      : savedOld?.length >= 4
-        ? savedOld
-        : legacyV2?.length >= 4
-          ? legacyV2
-          : DEFAULT_SLOTS;
+    const source =
+      Array.isArray(savedFour) && savedFour.length >= 4
+        ? savedFour
+        : Array.isArray(savedOld) && savedOld.length >= 4
+          ? savedOld
+          : Array.isArray(legacyV2) && legacyV2.length >= 4
+            ? legacyV2
+            : DEFAULT_SLOTS;
     return source.slice(0, 4).map((slot, index) => ({
       ...slot,
       slot: index + 1,
@@ -503,8 +500,6 @@ export function App() {
     }
   };
 
-
-
   const handleSyncPlans = async () => {
     if (hardwareTransport.getTransport() !== 'serial') {
       setConnectionError('Connect through USB Serial before synchronizing schedules to the ESP32.');
@@ -774,7 +769,6 @@ export function App() {
       'info',
       `Delayed Slot ${slotNum} (${originalTime}) by +${minutes}m -> ${nextTime}`,
     );
-
   };
 
   const handleCancelDelay = (slotNum: number, originalTime: string) => {
@@ -789,8 +783,6 @@ export function App() {
       ),
     );
   };
-
-
 
   // Build today's schedule across the four physical servo compartments.
   const todayDoses = useMemo<TodayDoseItem[]>(() => {
